@@ -427,3 +427,51 @@ app.delete("/delete-project/:id", async (req, res) => {
   await Work.findOneAndDelete({ id: id });
   res.send({ success: true });
 });
+
+//booking worker
+const bookingSchema = new mongoose.Schema({
+  workerId: String,
+  workerTitle: String,
+  workerCost: Number,
+  city: String,
+  clientName: String,
+  clientContact: String,
+  date: Date,
+  totalCost: Number,
+  numLaborers: Number,
+  
+});
+
+const BookingModel = mongoose.model('Booking', bookingSchema);
+
+app.post('/bookWorker', async (req, res) => {
+  try {
+    const { workerId, workerTitle, workerCost, city, bookingDetails } = req.body;
+    const newBooking = new BookingModel({
+      workerId,
+      workerTitle,
+      workerCost,
+      city,
+      clientName: bookingDetails.clientName,
+      
+      clientContact: bookingDetails.clientContact,
+      date: bookingDetails.date,
+      totalCost: bookingDetails.totalCost,
+      numLaborers: bookingDetails.numLaborers
+    });
+    await newBooking.save();
+    res.json({ success: true, message: 'Booking confirmed' });
+  } catch (error) {
+    console.error('Failed to create booking:', error);
+    res.status(500).json({ success: false, message: 'Failed to create booking', error: error.message });
+  }
+});
+// Backend endpoint to fetch all bookings
+app.get('/bookings', async (req, res) => {
+  try {
+    const bookings = await BookingModel.find();
+    res.status(200).json(bookings);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
