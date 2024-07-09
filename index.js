@@ -428,7 +428,7 @@ app.delete("/delete-project/:id", async (req, res) => {
   res.send({ success: true });
 });
 
-//booking worker
+//booking worker schema
 const bookingSchema = new mongoose.Schema({
   workerId: String,
   workerTitle: String,
@@ -443,7 +443,7 @@ const bookingSchema = new mongoose.Schema({
 });
 
 const BookingModel = mongoose.model('Booking', bookingSchema);
-
+//worker endpoint
 app.post('/bookWorker', async (req, res) => {
   try {
     const { workerId, workerTitle, workerCost, city, bookingDetails } = req.body;
@@ -475,3 +475,5 @@ app.get('/bookings', async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+
+
