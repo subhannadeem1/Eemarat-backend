@@ -476,4 +476,77 @@ app.get('/bookings', async (req, res) => {
   }
 });
 
+// checkout schema
+
+const Order = mongoose.model("Order", new mongoose.Schema({
+  billingDetails: {
+    firstName: String,
+    lastName: String,
+    email: String,
+    phone: String,
+    company: String,
+    address: String,
+    city: String,
+    region: String,
+    postcode: String,
+    notes: String,
+  },
+  items: [{
+    productId: Number,
+    quantity: Number,
+    price: Number,
+    total: Number,
+  }],
+  date: {
+    type: Date,
+    default: Date.now,
+  },
+  status: {
+    type: String,
+    default: 'Pending',
+  },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+  }
+}));
+
+app.post("/submitOrder", async (req, res) => {
+  console.log("Received order:", req.body);
+  try {
+    const { billingDetails, cartItems } = req.body;
+    const newOrder = new Order({
+      billingDetails: billingDetails,
+      items: cartItems.map(item => ({
+        productId: item.productId,
+        quantity: item.quantity,
+        price: item.price,
+        total: item.price * item.quantity,
+      })),
+      // Uncomment the following line if your order is linked to a logged-in user
+      // userId: req.user.id
+    });
+
+    const savedOrder = await newOrder.save();
+    res.status(201).json({ success: true, message: "Order placed successfully", order: savedOrder });
+  } catch (error) {
+    console.error("Failed to place order:", error);
+    res.status(500).json({ success: false, message: "Failed to place order" });
+  }
+});
+
+
+
+// Endpoint to get all orders
+app.get("/orders", async (req, res) => {
+  try {
+    const orders = await Order.find().populate('userId', 'name email'); // Optionally populate user details if needed
+    res.status(200).json(orders);
+  } catch (error) {
+    console.error("Failed to fetch orders:", error);
+    res.status(500).json({ success: false, message: "Failed to fetch orders" });
+  }
+});
+
+
 
